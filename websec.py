@@ -1,12 +1,11 @@
 import requests
 import pyfiglet
 from colorama import Fore, Style, init
-import re
 import socket
 import os
-import itertools
 import threading
 import time
+import whois
 
 init(autoreset=True)
 
@@ -18,6 +17,7 @@ class WebSec:
             self.url = url
 
     def print_custom_art(self):
+        print("\n")
         custom_art = """
 ░▒▓█▓▒░░▒▓█▓▒░░▒▓█▓▒░▒▓████████▓▒░▒▓███████▓▒░ ░▒▓███████▓▒░▒▓████████▓▒░▒▓██████▓▒░  
 ░▒▓█▓▒░░▒▓█▓▒░░▒▓█▓▒░▒▓█▓▒░      ░▒▓█▓▒░░▒▓█▓▒░▒▓█▓▒░      ░▒▓█▓▒░     ░▒▓█▓▒░░▒▓█▓▒░ 
@@ -29,8 +29,8 @@ class WebSec:
         """
         screen_width = os.get_terminal_size().columns
         lines = custom_art.strip().split('\n')
-        for line in lines: 
-            print(Fore.BLUE + line.center(screen_width) + Style.RESET_ALL)
+        for line in lines:
+            print(Fore.RED + line.center(screen_width) + Style.RESET_ALL)
 
     def test_sql_injection(self):
         payloads = [
@@ -41,14 +41,9 @@ class WebSec:
             "'; DROP TABLE users; --",
             "' AND (SELECT COUNT(*) FROM information_schema.tables) > 0 --"
         ]
-
+        
         print("\nTesting for SQL Injection...")
         found_vulnerability = False
-
-        self.spinner_running = True
-        spinner_thread = threading.Thread(target=self.spinner)
-        spinner_thread.start()
-
         for payload in payloads:
             try:
                 response = requests.get(self.url, params={'input': payload}, timeout=5)
@@ -57,13 +52,10 @@ class WebSec:
                     found_vulnerability = True
             except Exception as e:
                 print(f"Error while testing payload '{payload}': {e}")
-
-        self.spinner_running = False
-        spinner_thread.join()
-
+        
         if not found_vulnerability:
-            print(f"{Fore.GREEN}No SQL Injection vulnerabilities found.{Style.RESET_ALL}")
-        print("SQL Injection testing completed.")
+            print(f"{Fore.GREEN}No SQL Injection vulnerabilities found.{Style.RESET_ALL}\n")
+        print(f"{Fore.GREEN}SQL Injection testing completed.")
 
     def test_xss(self):
         payloads = [
@@ -75,14 +67,9 @@ class WebSec:
             "<body onload=alert('XSS')>",
             "<input type='text' value='\";alert(1);//'>"
         ]
-
+        
         print("\nTesting for XSS...")
         found_vulnerability = False
-
-        self.spinner_running = True
-        spinner_thread = threading.Thread(target=self.spinner)
-        spinner_thread.start()
-
         for payload in payloads:
             try:
                 response = requests.get(self.url, params={'input': payload}, timeout=5)
@@ -93,38 +80,61 @@ class WebSec:
                         found_vulnerability = True
             except Exception as e:
                 print(f"Error while testing payload '{payload}': {e}")
-
-        self.spinner_running = False
-        spinner_thread.join()
-
+        
         if not found_vulnerability:
-            print(f"{Fore.GREEN}No XSS vulnerabilities found.{Style.RESET_ALL}")
-        print("XSS testing completed.")
+            print(f"{Fore.GREEN}No XSS vulnerabilities found.{Style.RESET_ALL}\n")
+        print(f"{Fore.GREEN}XSS testing completed.")
 
-    def spinner(self):
-        spinner_chars = ['|', '/', '-', '\\']
-        idx = 0
-        while self.spinner_running:
-            print(Fore.YELLOW + spinner_chars[idx % len(spinner_chars)] + " Testing...", end='\r')
-            idx += 1
-            time.sleep(0.1)
-        print(" " * 20, end='\r')  
+    def get_whois_info(self):
+        print("\nRetrieving WHOIS information...")
+        domain = self.url.split("://")[-1].split("/")[0]
+        try:
+            whois_info = whois.whois(domain)
+            print(Fore.GREEN + str(whois_info) + Style.RESET_ALL)
+        except Exception as e:
+            print(f"{Fore.RED}Error retrieving WHOIS information: {e}{Style.RESET_ALL}")
+
+def loading_animation(task_description):
+    animation = "|/-\\"
+    idx = 0
+    global loading
+    while loading:
+        print(f"\r{Fore.CYAN}{task_description} {animation[idx % len(animation)]}{Style.RESET_ALL}", end="")
+        idx += 1
+        time.sleep(0.1)
 
 if __name__ == "__main__":
-    tester = WebSec("http://example.com") 
-    tester.print_custom_art() 
+    tester = WebSec("http://example.com")
+    tester.print_custom_art()
     
     while True:
         try:
-            url = input("Enter the URL of the web application to test : ")
-            tester = WebSec(url) 
+            url = input(Fore.YELLOW + "\nEnter the URL of the web application to test: " + Style.RESET_ALL)
+            tester = WebSec(url)
             host = tester.url.split("://")[-1].split("/")[0].split(":")[0]
             ip_address = socket.gethostbyname(host)
-            print(f"IP Address: {ip_address}")
+            print(Fore.GREEN + f"IP Address: {ip_address}\n" + Style.RESET_ALL)
 
             break
         except ValueError as e:
             print(f"{Fore.RED}{e}{Style.RESET_ALL}")
+        except socket.gaierror:
+            print(f"{Fore.RED}Invalid URL. Please try again.{Style.RESET_ALL}\n")
 
+    loading = True
+    threading.Thread(target=loading_animation, args=("Testing for SQL Injection...",)).start()
     tester.test_sql_injection()
+    loading = False
+    time.sleep(0.5)
+    
+    loading = True
+    threading.Thread(target=loading_animation, args=("Testing for XSS...",)).start()
     tester.test_xss()
+    loading = False
+    time.sleep(0.5)
+    
+    loading = True
+    threading.Thread(target=loading_animation, args=("Retrieving WHOIS information...",)).start()
+    tester.get_whois_info()
+    loading = False
+    time.sleep(0.5)
