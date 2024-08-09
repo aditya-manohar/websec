@@ -42,7 +42,7 @@ class WebSec:
             "' AND (SELECT COUNT(*) FROM information_schema.tables) > 0 --"
         ]
         
-        print("\nTesting for SQL Injection...")
+        print("\nTesting for SQL Injection vulnerability...")
         found_vulnerability = False
         severity = "None"
         for payload in payloads:
@@ -59,7 +59,7 @@ class WebSec:
             print(f"{Fore.GREEN}No SQL Injection vulnerabilities found.{Style.RESET_ALL}\n")
         else:
             print(f"{Fore.RED}SQL Injection severity: {severity}{Style.RESET_ALL}\n")
-        print(f"{Fore.GREEN}SQL Injection testing completed.")
+        print(f"{Fore.GREEN}SQL Injection vulnerability testing completed.")
 
     def test_xss(self):
         payloads = [
@@ -72,7 +72,7 @@ class WebSec:
             "<input type='text' value='\";alert(1);//'>"
         ]
         
-        print("\nTesting for XSS...")
+        print("\nTesting for XSS vulnerabilities...")
         found_vulnerability = False
         severity = "None"
         for payload in payloads:
@@ -94,7 +94,7 @@ class WebSec:
         print(f"{Fore.GREEN}XSS testing completed.")
 
     def test_csrf(self):
-        print("\nTesting for CSRF...")
+        print("\nTesting for CSRF vulnerabilities...")
         session = requests.Session()
         response = session.get(self.url, timeout=5)
         
@@ -117,7 +117,7 @@ class WebSec:
             "| ls"
         ]
         
-        print("\nTesting for Command Injection...")
+        print("\nTesting for Command Injection vulnerabilities...")
         found_vulnerability = False
         severity = "None"
         for payload in payloads:
@@ -214,25 +214,25 @@ if __name__ == "__main__":
     time.sleep(0.5)
 
     loading = True
-    threading.Thread(target=loading_animation, args=("Testing for SQL Injection...",)).start()
+    threading.Thread(target=loading_animation, args=("Testing for SQL Injection vulnerabilities...",)).start()
     tester.test_sql_injection()
     loading = False
     time.sleep(0.5)
     
     loading = True
-    threading.Thread(target=loading_animation, args=("Testing for XSS...",)).start()
+    threading.Thread(target=loading_animation, args=("Testing for XSS vulnerabilities...",)).start()
     tester.test_xss()
     loading = False
     time.sleep(0.5)
 
     loading = True
-    threading.Thread(target=loading_animation, args=("Testing for CSRF...",)).start()
+    threading.Thread(target=loading_animation, args=("Testing for CSRF vulnerabilities...",)).start()
     tester.test_csrf()
     loading = False
     time.sleep(0.5)
     
     loading = True
-    threading.Thread(target=loading_animation, args=("Testing for Command Injection...",)).start()
+    threading.Thread(target=loading_animation, args=("Testing for Command Injection vulnerabilities...",)).start()
     tester.test_command_injection()
     loading = False
     time.sleep(0.5)
