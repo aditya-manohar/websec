@@ -190,7 +190,7 @@ if __name__ == "__main__":
     
     while True:
         try:
-            url = input(Fore.YELLOW + "\nEnter the URL of the web application to test: " + Style.RESET_ALL)
+            url = input(Fore.YELLOW + "\nEnter the target URL : " + Style.RESET_ALL)
             tester = WebSec(url)
             host = tester.url.split("://")[-1].split("/")[0].split(":")[0]
             ip_address = socket.gethostbyname(host)
